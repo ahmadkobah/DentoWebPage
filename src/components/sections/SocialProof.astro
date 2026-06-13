@@ -1,0 +1,70 @@
+---
+/**
+ * Social proof — headline stats + testimonials.
+ * NOTE: numbers and quotes are PLACEHOLDERS (see t.proof.subtitle) — replace
+ * with real, attributable data before launch.
+ */
+import { Icon } from 'astro-icon/components';
+import Section from '../ui/Section.astro';
+import Badge from '../ui/Badge.astro';
+import Sparkline from '../decor/Sparkline.astro';
+import { getUi, type Lang } from '../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = getUi(lang);
+---
+
+<Section id="proof" topDivider>
+  <div class="mx-auto max-w-2xl text-center" data-reveal>
+    <Badge>{t.proof.eyebrow}</Badge>
+    <h2 class="mt-5 text-3xl font-extrabold tracking-tight text-[var(--color-heading)] sm:text-4xl">
+      {t.proof.title}
+    </h2>
+    <p class="mt-4 text-sm text-[var(--color-muted)]">{t.proof.subtitle}</p>
+  </div>
+
+  <!-- Stats -->
+  <dl class="mt-12 grid grid-cols-2 gap-6 lg:grid-cols-4">
+    {
+      t.proof.stats.map((stat, i) => (
+        <div
+          class="rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] p-6 text-center shadow-soft"
+          data-reveal
+          style={`--reveal-delay:${i * 70}ms`}
+        >
+          <dt class="sr-only">{stat.label}</dt>
+          <dd>
+            <span class="block text-4xl font-extrabold tracking-tight text-brand-600">
+              {stat.value}
+            </span>
+            <Sparkline variant={i} class="mx-auto mt-3" />
+            <span class="mt-2 block text-sm text-[var(--color-muted)]">{stat.label}</span>
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <!-- Testimonials -->
+  <div class="mt-8 grid gap-6 md:grid-cols-3">
+    {
+      t.proof.testimonials.map((item, i) => (
+        <figure
+          class="flex h-full flex-col rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] p-6 shadow-soft md:p-8"
+          data-reveal
+          style={`--reveal-delay:${i * 80}ms`}
+        >
+          <Icon name="lucide:quote" class="size-7 text-brand-200" aria-hidden="true" />
+          <blockquote class="mt-4 flex-1 leading-relaxed text-ink">{item.quote}</blockquote>
+          <figcaption class="mt-6 border-t border-[var(--color-line)] pt-4">
+            <span class="block font-semibold text-ink">{item.name}</span>
+            <span class="block text-sm text-[var(--color-muted)]">{item.role}</span>
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</Section>

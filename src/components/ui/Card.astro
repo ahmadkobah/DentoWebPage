@@ -1,0 +1,28 @@
+---
+/**
+ * Card — rounded white surface with a soft shadow and hairline border.
+ * @prop hover    add a subtle lift on hover (for interactive/feature cards)
+ * @prop padded   include default padding (true) or none (false)
+ * @prop as       wrapper element (default div)
+ */
+interface Props {
+  as?: string;
+  hover?: boolean;
+  padded?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+const { as: Tag = 'div', hover = false, padded = true, class: className = '', ...rest } =
+  Astro.props;
+---
+
+<Tag
+  class:list={[
+    'rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] shadow-card',
+    { 'p-6 md:p-8': padded, 'transition duration-300 hover:-translate-y-1 hover:shadow-lift': hover },
+    className,
+  ]}
+  {...rest}
+>
+  <slot />
+</Tag>

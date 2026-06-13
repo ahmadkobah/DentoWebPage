@@ -1,0 +1,254 @@
+---
+/**
+ * DemoForm — the primary conversion point ("Book a demo").
+ *
+ * Behaviour (progressive enhancement, no framework island):
+ *  - Submit endpoint is configurable via PUBLIC_FORM_ENDPOINT (Formspree or a
+ *    serverless function). With no endpoint set it runs in "demo mode".
+ *  - Vanilla JS intercepts submit → validates → POSTs via fetch → success/error.
+ *    Without JS, the form still POSTs natively to the endpoint.
+ *  - Anti-spam honeypot (`company_website`) + EU consent checkbox (links to the
+ *    privacy policy). A Friendly Captcha slot is stubbed for later (EU-friendly).
+ */
+import { Icon } from 'astro-icon/components';
+import Section from '../ui/Section.astro';
+import Badge from '../ui/Badge.astro';
+import Button from '../ui/Button.astro';
+import DotGrid from '../decor/DotGrid.astro';
+import Aurora from '../decor/Aurora.astro';
+import WindowGhost from '../decor/WindowGhost.astro';
+import { getUi, localePath, type Lang } from '../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = getUi(lang);
+const f = t.demo.form;
+
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT ?? '';
+const privacyHref = localePath(lang, '/privacy');
+
+const fieldClass =
+  'field-input w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-card)] px-4 py-2.5 text-ink shadow-soft transition placeholder:text-[var(--color-muted)] focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30';
+const labelClass = 'mb-1.5 block text-sm font-medium text-ink';
+const reqMark = '<span class="text-accent-600" aria-hidden="true">*</span>';
+---
+
+<Section id="demo" class="relative isolate overflow-hidden">
+  <DotGrid />
+  <Aurora class="start-[-8rem] bottom-[-6rem] size-[26rem]" />
+  <div class="grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-14">
+    <!-- Pitch / what you get -->
+    <div data-reveal>
+      <Badge>{t.demo.eyebrow}</Badge>
+      <h2 class="mt-5 text-3xl font-extrabold tracking-tight text-[var(--color-heading)] sm:text-4xl">
+        {t.demo.title}
+      </h2>
+      <p class="mt-4 text-lg text-[var(--color-muted)]">{t.demo.subtitle}</p>
+
+      <p class="mt-8 text-sm font-semibold text-ink">{t.demo.asideTitle}</p>
+      <ul class="mt-4 space-y-3">
+        {
+          t.demo.asidePoints.map((point) => (
+            <li class="flex gap-3">
+              <span class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-200">
+                <Icon name="lucide:check" class="size-4" aria-hidden="true" />
+              </span>
+              <span class="text-ink">{point}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <!-- The form -->
+    <div class="relative">
+      <WindowGhost class="inset-x-3 -top-4 bottom-3 -end-5" />
+      <div
+        class="relative rounded-3xl border border-[var(--color-line)] bg-[var(--color-card)] p-6 shadow-card md:p-8"
+        data-reveal
+        style="--reveal-delay:120ms"
+      >
+      <form
+        id="demo-form"
+        method="POST"
+        action={endpoint || undefined}
+        data-endpoint={endpoint}
+        data-sending={f.sending}
+        data-error={t.demo.error.text}
+        data-demo={t.demo.demoModeNote}
+        novalidate
+      >
+        <!-- Honeypot: hidden from humans, catches bots that fill every field. -->
+        <div style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true">
+          <label
+            >Leave this field empty
+            <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+          </label>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class={labelClass} for="demo-name">{f.name} <Fragment set:html={reqMark} /></label>
+            <input id="demo-name" name="name" type="text" required autocomplete="name"
+              placeholder={f.namePlaceholder} class={fieldClass} />
+          </div>
+          <div>
+            <label class={labelClass} for="demo-clinic">{f.clinic} <Fragment set:html={reqMark} /></label>
+            <input id="demo-clinic" name="clinic" type="text" required autocomplete="organization"
+              placeholder={f.clinicPlaceholder} class={fieldClass} />
+          </div>
+          <div>
+            <label class={labelClass} for="demo-email">{f.email} <Fragment set:html={reqMark} /></label>
+            <input id="demo-email" name="email" type="email" required autocomplete="email"
+              placeholder={f.emailPlaceholder} class={fieldClass} />
+          </div>
+          <div>
+            <label class={labelClass} for="demo-phone">{f.phone} <Fragment set:html={reqMark} /></label>
+            <input id="demo-phone" name="phone" type="tel" required autocomplete="tel"
+              placeholder={f.phonePlaceholder} class={fieldClass} />
+          </div>
+          <div class="sm:col-span-2">
+            <label class={labelClass} for="demo-message">
+              {f.message}
+              <span class="font-normal text-[var(--color-muted)]">({f.optional})</span>
+            </label>
+            <textarea id="demo-message" name="message" rows="3"
+              placeholder={f.messagePlaceholder} class={fieldClass}></textarea>
+          </div>
+
+          <!-- EU consent -->
+          <div class="sm:col-span-2">
+            <label class="flex items-start gap-3 text-sm text-[var(--color-muted)]">
+              <input id="demo-consent" name="consent" type="checkbox" required
+                class="mt-0.5 size-4 shrink-0 rounded border-[var(--color-line)] text-brand-600 focus:ring-brand-500/40" />
+              <span>
+                {f.consentBefore}{' '}
+                <a href={privacyHref} class="font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800">
+                  {f.consentLink}</a>{f.consentAfter}
+              </span>
+            </label>
+          </div>
+
+          {/*
+            TODO (EU#5 — spam): Friendly Captcha (German, GDPR-first, cookieless).
+            Add `npm i @friendlycaptcha/sdk`, then drop the widget here and verify
+            the `frc-captcha-solution` token server-side. Left out until you have a
+            sitekey. A honeypot above already blocks basic bots in the meantime.
+            <div class="frc-captcha sm:col-span-2" data-sitekey="YOUR_SITEKEY"></div>
+          */}
+
+          <div class="sm:col-span-2">
+            <Button id="demo-submit" type="submit" size="lg" class="w-full">
+              <span data-label>{f.submit}</span>
+            </Button>
+          </div>
+        </div>
+
+        <!-- Live status (errors / demo-mode notice) -->
+        <p id="demo-status" role="status" aria-live="polite" class="mt-4 text-sm" hidden></p>
+      </form>
+
+      <!-- Success panel (revealed on submit) -->
+      <div id="demo-success" class="flex flex-col items-center py-8 text-center" hidden>
+        <span class="grid size-14 place-items-center rounded-full bg-brand-100 text-brand-600">
+          <Icon name="lucide:check" class="size-8" aria-hidden="true" />
+        </span>
+        <h3 class="mt-4 text-xl font-bold text-ink">{t.demo.success.title}</h3>
+        <p class="mt-2 text-[var(--color-muted)]">{t.demo.success.text}</p>
+      </div>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<style>
+  #demo-status[data-type='error'] {
+    color: var(--color-accent-600);
+  }
+  #demo-status[data-type='info'] {
+    color: var(--color-muted);
+  }
+
+  /* Calm, after-interaction-only validation feedback. :user-invalid (NOT
+     :invalid) fires only once a field has been touched, so nothing yells on
+     load. This complements the form's reportValidity() message, so cues are
+     never color-only (WCAG 1.4.1). */
+  .field-input:user-invalid {
+    border-color: var(--color-accent-500);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent-500) 18%, transparent);
+  }
+  .field-input:user-valid {
+    border-color: var(--color-brand-500);
+  }
+</style>
+
+<script>
+  const form = document.getElementById('demo-form') as HTMLFormElement | null;
+  if (form) {
+    const endpoint = form.getAttribute('data-endpoint') || '';
+    const sendingText = form.getAttribute('data-sending') || 'Sending…';
+    const errorText = form.getAttribute('data-error') || '';
+    const demoText = form.getAttribute('data-demo') || '';
+
+    const status = document.getElementById('demo-status') as HTMLParagraphElement | null;
+    const successPanel = document.getElementById('demo-success') as HTMLElement | null;
+    const submitBtn = document.getElementById('demo-submit') as HTMLButtonElement | null;
+    const submitLabel = submitBtn?.querySelector('[data-label]') as HTMLElement | null;
+    const originalLabel = submitLabel?.textContent || '';
+
+    function showStatus(message: string, type: 'error' | 'info') {
+      if (!status) return;
+      status.textContent = message;
+      status.dataset.type = type;
+      status.hidden = false;
+    }
+    function setLoading(loading: boolean) {
+      submitBtn?.toggleAttribute('disabled', loading);
+      if (submitLabel) submitLabel.textContent = loading ? sendingText : originalLabel;
+    }
+    function onSuccess() {
+      form!.hidden = true;
+      if (successPanel) successPanel.hidden = false;
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      // Honeypot tripped → silently behave like success, send nothing.
+      const honeypot = form.querySelector<HTMLInputElement>('input[name="company_website"]');
+      if (honeypot && honeypot.value.trim() !== '') {
+        onSuccess();
+        return;
+      }
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      // No endpoint configured yet → demo mode.
+      if (!endpoint) {
+        showStatus(demoText, 'info');
+        return;
+      }
+
+      setLoading(true);
+      if (status) status.hidden = true;
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form),
+        });
+        if (response.ok) onSuccess();
+        else showStatus(errorText, 'error');
+      } catch {
+        showStatus(errorText, 'error');
+      } finally {
+        setLoading(false);
+      }
+    });
+  }
+</script>

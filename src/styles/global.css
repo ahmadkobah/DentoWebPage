@@ -1,0 +1,395 @@
+/* ===========================================================================
+   Dento — global styles & design tokens  ("Clean Clinical Trust")
+   Tailwind CSS v4. Tokens are declared in @theme so they become real utilities
+   (e.g. --color-brand-500 -> bg-brand-500, text-brand-500, border-brand-500).
+   =========================================================================== */
+@import "tailwindcss";
+
+/* Dark-mode is opt-in via a `.dark` class (not used yet, reserved). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ---- Typography ------------------------------------------------------- */
+  /* --font-inter / --font-tajawal are injected by Astro's <Font /> components
+     (self-hosted, see astro.config.mjs). They already include capsize-tuned
+     fallbacks to minimise layout shift. */
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-arabic: var(--font-tajawal), "Segoe UI", Tahoma, sans-serif;
+
+  /* ---- Brand: medical teal (primary) ------------------------------------ */
+  --color-brand-50: #eefbf9;
+  --color-brand-100: #d4f3ef;
+  --color-brand-200: #ade7e0;
+  --color-brand-300: #79d4cb;
+  --color-brand-400: #44bab0;
+  --color-brand-500: #1f9e94;
+  --color-brand-600: #0f8a82; /* primary brand color */
+  --color-brand-700: #136963;
+  --color-brand-800: #145451;
+  --color-brand-900: #154644;
+  --color-brand-950: #062a2a;
+
+  /* ---- Accent: warm coral — RESERVED FOR CTAs ONLY ---------------------- */
+  --color-accent-50: #fff3f0;
+  --color-accent-100: #ffe3db;
+  --color-accent-200: #ffc7b8;
+  --color-accent-300: #ffa088;
+  --color-accent-400: #ff7a59;
+  --color-accent-500: #f65a35; /* primary CTA color */
+  --color-accent-600: #e0441f;
+  --color-accent-700: #ba3417;
+
+  /* ---- Neutral surface / ink ------------------------------------------- */
+  --color-ink: #102a2c;     /* default body text */
+  --color-muted: #5b6b72;   /* secondary text */
+  --color-surface: #f7f9fa; /* soft grey section background */
+  --color-line: #e6edec;    /* hairline borders */
+  --color-bg: #ffffff;      /* page background */
+  --color-card: #ffffff;    /* card / panel surface */
+  --color-heading: #082a2b; /* headings (near brand-950) */
+  --color-chip: #eefbf9;    /* brand-tinted chip background */
+
+  /* ---- Rounding & shadow ------------------------------------------------ */
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+
+  --shadow-soft: 0 1px 2px rgba(16, 42, 44, 0.04), 0 8px 24px rgba(16, 42, 44, 0.06);
+  --shadow-card: 0 1px 3px rgba(16, 42, 44, 0.06), 0 12px 32px rgba(16, 42, 44, 0.08);
+  --shadow-lift: 0 18px 48px rgba(15, 138, 130, 0.18);
+}
+
+/* ---------------------------------------------------------------------------
+   Dark mode ("night mode"). Toggled by a `.dark` class on <html> (set by an
+   early inline script in BaseLayout to avoid any flash). Flipping these few
+   semantic tokens re-themes everything that uses them — surfaces, text, borders
+   — so most components need no per-element dark styles. Shadows are softened
+   (deep shadows read poorly on dark) and the surface goes a touch lighter than
+   the page for separation.
+   --------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+  --color-bg: #07191a;
+  --color-card: #0f2829;
+  --color-heading: #eef6f5;
+  --color-ink: #d6e6e4;
+  --color-muted: #92aaa9;
+  --color-surface: #0b2122;
+  --color-line: #1e3b3c;
+  --color-chip: #123230;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-lift: 0 18px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* ===========================================================================
+   Base layer
+   =========================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background-color: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Arabic locale swaps to an RTL-aware typeface. */
+  html[lang="ar"] body,
+  [dir="rtl"] {
+    font-family: var(--font-arabic);
+  }
+
+  /* Accessible focus ring for keyboard users (WCAG AA). */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-200);
+    color: var(--color-brand-950);
+  }
+
+  /* Respect users who prefer reduced motion. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ===========================================================================
+   Reusable component classes (extracted repeated patterns)
+   =========================================================================== */
+@layer components {
+  /* Centered content container with comfortable gutters. */
+  .container-page {
+    width: 100%;
+    max-width: 75rem; /* 1200px */
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Mirror directional icons (e.g. a CTA arrow) in right-to-left layouts.
+     Add `class="rtl-flip"` to the element wrapping the <svg>. */
+  [dir="rtl"] .rtl-flip svg {
+    transform: scaleX(-1);
+  }
+}
+
+/* ===========================================================================
+   Motion — scroll reveal + page transitions
+   ---------------------------------------------------------------------------
+   Reveal is opt-in per element via `data-reveal`, staggered with an optional
+   inline `--reveal-delay`. It only activates when JS adds `.reveal-ready` to
+   <html> AND the user hasn't asked for reduced motion — so with JS disabled or
+   reduced motion, content is simply shown (never hidden / never broken).
+   =========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-ready [data-reveal] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  .reveal-ready [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Subtle native cross-document page transition (zero JS; ignored where
+   unsupported). Must be a top-level rule. */
+@view-transition {
+  navigation: auto;
+}
+
+/* Honour reduced-motion by disabling the transition animations. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* Nav underline: flip the grow origin for RTL (needed regardless of motion). */
+[dir="rtl"] .nav-underline::after {
+  transform-origin: right;
+}
+
+/* Softly fade a decoration's edges to nothing (used by watermarks). */
+.deco-soft-mask {
+  -webkit-mask-image: radial-gradient(closest-side, #000 60%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 60%, transparent 100%);
+}
+
+/* ===========================================================================
+   Scroll-triggered "comes alive" enhancements. They hook off the EXISTING
+   reveal system (.reveal-ready on <html> + [data-reveal].is-visible), so they
+   only ever play when motion is allowed and otherwise show the final state.
+   =========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  /* Hero mock dashboard: stat bars grow from 0, appointment rows cascade in. */
+  .reveal-ready [data-reveal] .mock-bar {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  [dir="rtl"] .reveal-ready [data-reveal] .mock-bar {
+    transform-origin: right;
+  }
+  .reveal-ready [data-reveal].is-visible .mock-bar {
+    animation: mock-bar-grow 0.8s 0.25s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  @keyframes mock-bar-grow {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .reveal-ready [data-reveal] .mock-row {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  .reveal-ready [data-reveal].is-visible .mock-row {
+    animation: mock-row-in 0.5s var(--mock-delay, 0s) ease forwards;
+  }
+  @keyframes mock-row-in {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Security: the shield strokes itself on, then the trust badges cascade. */
+  .reveal-ready .shield-emblem path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .reveal-ready [data-reveal].is-visible .shield-emblem path {
+    animation: shield-draw 0.8s 0.1s ease forwards;
+  }
+  .reveal-ready [data-reveal].is-visible .shield-emblem path:last-child {
+    animation-delay: 0.55s;
+  }
+  @keyframes shield-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .reveal-ready [data-reveal] .sec-badge {
+    opacity: 0;
+    transform: translateY(0.375rem);
+  }
+  .reveal-ready [data-reveal].is-visible .sec-badge {
+    animation: badge-in 0.4s var(--badge-delay, 0s) ease forwards;
+  }
+  @keyframes badge-in {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Generic decoration: stroke-draw lines/paths/circles (need pathLength="1")
+     and fade-in nodes — both reuse the shield-draw keyframe / reveal system. */
+  .reveal-ready .draw-on {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .reveal-ready [data-reveal].is-visible .draw-on {
+    animation: shield-draw 0.9s var(--draw-delay, 0.15s) ease forwards;
+  }
+  .reveal-ready [data-reveal] .deco-node {
+    opacity: 0;
+  }
+  .reveal-ready [data-reveal].is-visible .deco-node {
+    animation: deco-node-in 0.45s var(--node-delay, 0.3s) ease forwards;
+  }
+  @keyframes deco-node-in {
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* ===========================================================================
+   Hero MockApp — per-screen entrance animations.
+   Each plays when a screen becomes active (the rotation island toggles
+   `data-on` on the active [data-screen]); the hidden start state lives ONLY
+   inside this no-preference block, so the resting/reduced-motion state is the
+   natural fully-visible screen. Compositor-only (opacity/transform/clip).
+   =========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  /* Header settle — every screen */
+  [data-screen][data-on] .mock-head {
+    animation: mock-head-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes mock-head-in {
+    from { opacity: 0; transform: translateY(-0.375rem); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* Chair map — tiles pop in (grid stagger), then status dots sync on */
+  [data-screen][data-on] .mock-chair {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.96);
+    animation: mock-chair-pop 0.42s calc(var(--i, 0) * 0.055s) cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes mock-chair-pop {
+    from { opacity: 0; transform: translateY(0.5rem) scale(0.96); }
+    to { opacity: 1; transform: none; }
+  }
+  [data-screen][data-on] .mock-chair-dot {
+    opacity: 0;
+    animation: mock-fade 0.3s 0.46s ease both;
+  }
+
+  /* Dental chart — teeth wipe up the arch L→R, treated tooth settles, plan rows slide in */
+  [data-screen][data-on] .chart-tooth {
+    opacity: 0;
+    clip-path: inset(100% 0 0 0);
+    animation: mock-tooth-rise 0.42s var(--tooth-delay, 0s) cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  [dir="rtl"] [data-screen][data-on] .chart-tooth {
+    animation-delay: var(--tooth-delay-rtl, 0s);
+  }
+  @keyframes mock-tooth-rise {
+    from { opacity: 0; clip-path: inset(100% 0 0 0); }
+    60% { opacity: 1; }
+    to { opacity: 1; clip-path: inset(0 0 0 0); }
+  }
+  [data-screen][data-on] .chart-tooth--active {
+    animation:
+      mock-tooth-rise 0.42s var(--tooth-delay, 0s) cubic-bezier(0.2, 0.7, 0.2, 1) both,
+      mock-active-settle 0.5s 0.46s ease both;
+  }
+  @keyframes mock-active-settle {
+    0% { opacity: 1; }
+    45% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+  [data-screen][data-on] .chart-row {
+    opacity: 0;
+    transform: translateY(0.4rem);
+    animation: mock-fade-rise 0.45s var(--row-delay, 0s) ease both;
+  }
+
+  /* Imaging — the scan line sweeps continuously (ping-pong) the WHOLE time the
+     screen is active; the animation only exists while [data-on], so it stops at
+     the transition and never runs on the other screens. The tooth + thumbnails
+     still do their one-shot develop. */
+  [data-screen][data-on] .mock-scanline {
+    animation: mock-scan-loop 2.2s ease-in-out infinite alternate;
+  }
+  @keyframes mock-scan-loop {
+    from { transform: translateY(var(--scan-from, -3.4rem)); }
+    to { transform: translateY(var(--scan-to, 3.4rem)); }
+  }
+  [data-screen][data-on] .mock-develop {
+    opacity: 0;
+    transform: translateY(0.4rem);
+    animation: mock-fade-rise 0.55s 0.06s ease both;
+  }
+  [data-screen][data-on] .mock-thumb {
+    opacity: 0;
+    transform: translateY(0.45rem);
+    animation: mock-fade-rise 0.45s calc(0.18s + var(--thumb-i, 0) * 0.08s) ease both;
+  }
+
+  @keyframes mock-fade {
+    to { opacity: 1; }
+  }
+  @keyframes mock-fade-rise {
+    to { opacity: 1; transform: none; }
+  }
+}

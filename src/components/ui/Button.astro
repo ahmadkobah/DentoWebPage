@@ -1,0 +1,78 @@
+---
+/**
+ * Button — the one button component for the whole site.
+ * Renders an <a> when `href` is set, otherwise a <button>.
+ *
+ * Variants:
+ *   primary   → warm coral CTA (reserved for conversion actions)
+ *   secondary → teal outline on white
+ *   ghost     → text-only, subtle hover
+ *
+ * Optional Lucide `icon` (e.g. "lucide:calendar-check") at the start or end.
+ * Any extra attributes (aria-*, target, rel, name, type, disabled…) pass through.
+ */
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  icon?: string;
+  iconPosition?: 'start' | 'end';
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  icon,
+  iconPosition = 'start',
+  type = 'button',
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const base =
+  'group inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition ' +
+  'active:scale-[0.97] motion-reduce:active:scale-100 ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ' +
+  'disabled:opacity-60 disabled:pointer-events-none';
+
+const variants: Record<string, string> = {
+  primary: 'bg-accent-500 text-white shadow-soft hover:bg-accent-600 active:bg-accent-700',
+  secondary:
+    'border border-brand-200 bg-[var(--color-card)] text-brand-700 hover:border-brand-300 hover:bg-brand-50 dark:border-brand-700 dark:text-brand-200 dark:hover:bg-brand-900/40',
+  ghost: 'text-brand-700 hover:bg-brand-50 dark:text-brand-200 dark:hover:bg-brand-900/40',
+};
+
+const sizes: Record<string, string> = {
+  sm: 'px-4 py-2 text-sm',
+  md: 'px-6 py-3 text-base',
+  lg: 'px-7 py-3.5 text-lg',
+};
+
+const iconSize = size === 'sm' ? 'size-4' : 'size-5';
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  class:list={[base, variants[variant], sizes[size], className]}
+  href={href}
+  type={href ? undefined : type}
+  {...rest}
+>
+  {icon && iconPosition === 'start' && <Icon name={icon} class={iconSize} aria-hidden="true" />}
+  <slot />
+  {
+    icon && iconPosition === 'end' && (
+      <Icon
+        name={icon}
+        class={`${iconSize} transition-transform group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 rtl:group-hover:-translate-x-0.5 rtl:group-focus-visible:-translate-x-0.5`}
+        aria-hidden="true"
+      />
+    )
+  }
+</Tag>

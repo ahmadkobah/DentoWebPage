@@ -1,0 +1,152 @@
+---
+/**
+ * BaseLayout — the single HTML shell for every page in both locales.
+ *
+ * Responsibilities:
+ *  - Sets <html lang dir> correctly per locale (ar => dir="rtl").
+ *  - Emits per-page SEO: title, description, canonical, Open Graph + Twitter.
+ *  - Emits hreflang alternates between en / ar (+ x-default) using a single
+ *    locale-agnostic `path` prop (e.g. "/" or "/privacy").
+ *  - Loads fonts (Inter for EN, Cairo / IBM Plex Sans Arabic for AR).
+ *
+ * Pages pass `lang` + `path`; everything else has sensible defaults pulled
+ * from the copy deck.
+ */
+import '../styles/global.css';
+import { Font } from 'astro:assets';
+import { getUi, dirFor, localeUrl, type Lang } from '../i18n/utils';
+
+interface Props {
+  /** Active locale. */
+  lang: Lang;
+  /** Locale-agnostic route (no /ar prefix), e.g. "/" or "/privacy". */
+  path?: string;
+  /** Overrides the default per-locale <title>. */
+  title?: string;
+  /** Overrides the default meta description. */
+  description?: string;
+  /** OG/Twitter share image (root-relative). */
+  image?: string;
+}
+
+const { lang, path = '/', title, description, image = '/og-image.svg' } = Astro.props;
+
+const t = getUi(lang);
+const dir = dirFor(lang);
+
+const pageTitle = title ?? t.meta.title;
+const pageDescription = description ?? t.meta.description;
+
+const site = Astro.site;
+const canonical = localeUrl(site, lang, path);
+const enHref = localeUrl(site, 'en', path);
+const arHref = localeUrl(site, 'ar', path);
+const imageUrl = site ? new URL(image, site).toString() : image;
+---
+
+<!doctype html>
+<html lang={t.meta.htmlLang} dir={dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Primary SEO -->
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- hreflang alternates (both locales + x-default => English) -->
+    <link rel="alternate" hreflang="en" href={enHref} />
+    <link rel="alternate" hreflang="ar" href={arHref} />
+    <link rel="alternate" hreflang="x-default" href={enHref} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={t.meta.siteName} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={t.meta.ogLocale} />
+    <meta property="og:image" content={imageUrl} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={imageUrl} />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#0f8a82" />
+
+    <!--
+      Fonts: Inter (EN) + Tajawal (AR). Self-hosted at build time via Astro's
+      Fonts API (configured in astro.config.mjs) — NO request to the Google CDN
+      at runtime, so no visitor IP leaves for a third party (GDPR-safe).
+    -->
+    <Font cssVariable="--font-inter" preload />
+    <Font cssVariable="--font-tajawal" preload />
+
+    {/*
+      TODO (EU#4 — privacy-friendly analytics): cookieless Plausible. Left
+      DISABLED until an account/domain is confirmed. Plausible is EU-hosted and
+      sets no cookies, so it needs NO consent banner. Enable by uncommenting and
+      setting your domain (or swap for self-hosted Matomo/Umami).
+
+      <script
+        defer
+        data-domain="dento.example.com"
+        src="https://plausible.io/js/script.js"
+      ></script>
+    */}
+
+    <!-- Apply the saved/system theme BEFORE paint so dark mode never flashes. -->
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Enable scroll-reveal early (before paint) so there's no flash. Only when
+         motion is allowed; with JS off or reduced motion, content stays visible. -->
+    <script is:inline>
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+        document.documentElement.classList.add('reveal-ready');
+      }
+    </script>
+
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+
+    <script>
+      // Scroll-reveal: add `.is-visible` to [data-reveal] elements as they enter
+      // the viewport. Falls back to showing everything if unsupported.
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const revealables = document.querySelectorAll('[data-reveal]');
+
+      if (reduce || !('IntersectionObserver' in window)) {
+        revealables.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        const observer = new IntersectionObserver(
+          (entries, obs) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                obs.unobserve(entry.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+        );
+        revealables.forEach((el) => observer.observe(el));
+      }
+    </script>
+  </body>
+</html>

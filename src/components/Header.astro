@@ -1,0 +1,123 @@
+---
+/**
+ * Header — sticky top bar: logo, section nav, language toggle, demo CTA.
+ * Mobile menu is toggled by a tiny vanilla <script> (no framework island).
+ *
+ * @prop lang  active locale
+ * @prop path  locale-agnostic route (so nav anchors point back to the home
+ *             page's sections from any page, and the toggle preserves the route)
+ */
+import { Icon } from 'astro-icon/components';
+import Logo from './ui/Logo.astro';
+import Button from './ui/Button.astro';
+import LanguagePicker from './LanguagePicker.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import { getUi, localePath, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  path?: string;
+}
+const { lang, path = '/' } = Astro.props;
+const t = getUi(lang);
+
+const home = localePath(lang, '/');
+const sectionHref = (id: string) => `${home}#${id}`;
+const navLinks = [
+  { label: t.nav.features, href: sectionHref('features') },
+  { label: t.nav.why, href: sectionHref('why') },
+  { label: t.nav.security, href: sectionHref('security') },
+  { label: t.nav.pricing, href: sectionHref('pricing') },
+  { label: t.nav.contact, href: localePath(lang, '/contact') },
+];
+---
+
+<header class="sticky top-0 z-50 border-b border-[var(--color-line)] bg-[var(--color-card)]/85 backdrop-blur-md">
+  <div class="container-page flex h-16 items-center justify-between gap-4 md:h-18">
+    <Logo lang={lang} transitionName="site-logo" />
+
+    <!-- Desktop nav -->
+    <nav class="hidden items-center gap-1 lg:flex" aria-label="Primary">
+      {
+        navLinks.map((link) => (
+          <a
+            href={link.href}
+            class="relative nav-underline rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-muted)] transition hover:text-brand-700 dark:hover:text-brand-200 after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-brand-500 after:transition-transform hover:after:scale-x-100 focus-visible:after:scale-x-100 dark:after:bg-brand-400"
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-1 sm:gap-2">
+      <ThemeToggle lang={lang} />
+      <LanguagePicker lang={lang} path={path} align="end" class="hidden sm:block" />
+      <Button href={sectionHref('demo')} size="sm" class="hidden sm:inline-flex">
+        {t.nav.bookDemo}
+      </Button>
+
+      <!-- Mobile menu button -->
+      <button
+        id="menu-btn"
+        type="button"
+        class="grid size-10 place-items-center rounded-lg text-brand-700 transition hover:bg-brand-50 lg:hidden"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label={t.nav.openMenu}
+      >
+        <Icon name="lucide:menu" class="size-6" data-menu-open aria-hidden="true" />
+        <Icon name="lucide:x" class="hidden size-6" data-menu-close aria-hidden="true" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu panel -->
+  <div id="mobile-menu" class="hidden border-t border-[var(--color-line)] bg-[var(--color-card)] lg:hidden">
+    <nav class="container-page flex flex-col gap-1 py-4" aria-label="Mobile">
+      {
+        navLinks.map((link) => (
+          <a
+            href={link.href}
+            data-menu-link
+            class="rounded-lg px-3 py-2.5 text-base font-medium text-ink transition hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-brand-900/40 dark:hover:text-brand-200"
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <div class="mt-2 flex items-center justify-between gap-3 border-t border-[var(--color-line)] pt-4">
+        <LanguagePicker lang={lang} path={path} align="start" />
+        <Button href={sectionHref('demo')} size="sm" data-menu-link>{t.nav.bookDemo}</Button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  // Minimal, dependency-free mobile-menu toggle (no framework island).
+  const btn = document.getElementById('menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  const openIcon = btn?.querySelector('[data-menu-open]');
+  const closeIcon = btn?.querySelector('[data-menu-close]');
+
+  function setOpen(open: boolean) {
+    if (!btn || !menu) return;
+    btn.setAttribute('aria-expanded', String(open));
+    menu.classList.toggle('hidden', !open);
+    openIcon?.classList.toggle('hidden', open);
+    closeIcon?.classList.toggle('hidden', !open);
+  }
+
+  btn?.addEventListener('click', () => {
+    setOpen(btn.getAttribute('aria-expanded') !== 'true');
+  });
+
+  // Close after tapping a link, or pressing Escape.
+  menu?.querySelectorAll('[data-menu-link]').forEach((el) =>
+    el.addEventListener('click', () => setOpen(false)),
+  );
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setOpen(false);
+  });
+</script>

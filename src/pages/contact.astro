@@ -1,0 +1,32 @@
+---
+/** Contact (`/contact`) — contact details + the demo-request form. */
+import SiteLayout from '../layouts/SiteLayout.astro';
+import DemoForm from '../components/sections/DemoForm.astro';
+import { Icon } from 'astro-icon/components';
+import { getUi } from '../i18n/utils';
+
+const lang = 'en' as const;
+const t = getUi(lang);
+const c = t.legal.contact;
+// TODO: replace placeholder contact details with the real ones.
+---
+
+<SiteLayout lang={lang} path="/contact" title={`${c.title} — ${t.meta.brand}`} description={c.lead}>
+  <section class="container-page max-w-3xl pt-12 text-center md:pt-18">
+    <h1 class="text-4xl font-extrabold tracking-tight text-[var(--color-heading)] sm:text-5xl">{c.title}</h1>
+    <p class="mx-auto mt-4 max-w-xl text-lg text-[var(--color-muted)]">{c.lead}</p>
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm">
+      <a
+        href="mailto:hello@dento.example.com"
+        class="inline-flex items-center gap-2 font-medium text-brand-700 transition hover:text-brand-800"
+      >
+        <Icon name="lucide:mail" class="size-4" aria-hidden="true" /> hello@dento.example.com
+      </a>
+      <span class="inline-flex items-center gap-2 text-[var(--color-muted)]">
+        <Icon name="lucide:phone" class="size-4" aria-hidden="true" /> +20 1XX XXX XXXX
+      </span>
+    </div>
+  </section>
+
+  <DemoForm lang={lang} />
+</SiteLayout>

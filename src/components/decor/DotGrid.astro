@@ -1,0 +1,25 @@
+---
+/**
+ * DotGrid — a faint engineered dot-grid backdrop ("data-canvas" tech texture).
+ * Place inside a section that is `relative isolate` (so the -z-10 sits above the
+ * section background but below content). Auto-themes via --color-line and fades
+ * out via a mask so it never reaches text. Pure CSS, one painted layer.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<div class:list={['deco-dotgrid pointer-events-none absolute inset-0 -z-10', className]} aria-hidden="true">
+</div>
+
+<style>
+  .deco-dotgrid {
+    background-image: radial-gradient(circle, var(--color-line) 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(125% 80% at 50% 0%, #000 0%, transparent 68%);
+    mask-image: radial-gradient(125% 80% at 50% 0%, #000 0%, transparent 68%);
+    opacity: 0.7;
+  }
+</style>

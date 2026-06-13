@@ -1,0 +1,37 @@
+---
+/**
+ * Sparkline — a tiny EKG/health-monitor line that draws on with its reveal
+ * container. Place inside a [data-reveal] (e.g. a stat card). `variant` picks a
+ * shape; RTL-mirrored so it draws toward the reading direction.
+ */
+interface Props {
+  variant?: number;
+  class?: string;
+}
+const { variant = 0, class: className = '' } = Astro.props;
+
+const paths = [
+  'M0 18 L12 14 L24 16 L36 8 L48 11 L60 5 L72 7 L80 3',
+  'M0 14 L12 16 L24 9 L36 12 L48 6 L60 10 L72 4 L80 6',
+  'M0 20 L12 12 L24 15 L36 10 L48 13 L60 7 L72 9 L80 4',
+  'M0 16 L10 17 L20 8 L30 10 L42 6 L54 9 L66 5 L80 8',
+];
+const d = paths[variant % paths.length];
+---
+
+<svg
+  class:list={['h-5 w-16 text-brand-300 dark:text-brand-600 rtl:-scale-x-100', className]}
+  viewBox="0 0 80 24"
+  fill="none"
+  aria-hidden="true"
+>
+  <path
+    class="draw-on"
+    pathLength="1"
+    d={d}
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

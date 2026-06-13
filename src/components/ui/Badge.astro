@@ -1,0 +1,39 @@
+---
+/**
+ * Badge — the section "eyebrow" kicker: a short teal overline rule (or the EKG
+ * vitals line) followed by the label. Deliberately NOT a rounded pill — keeps
+ * the eyebrows feeling editorial/designed rather than like a generic template.
+ */
+interface Props {
+  /** Use the little EKG/tooth-blip line as the accent instead of a plain rule. */
+  vitals?: boolean;
+  class?: string;
+}
+const { vitals = false, class: className = '' } = Astro.props;
+---
+
+<span
+  class:list={[
+    'inline-flex items-center gap-2.5 text-sm font-semibold text-brand-600 dark:text-brand-300',
+    className,
+  ]}
+>
+  {
+    vitals ? (
+      <svg class="h-3 w-9 shrink-0 text-brand-400 rtl:-scale-x-100" viewBox="0 0 64 16" fill="none" aria-hidden="true">
+        <path
+          class="draw-on"
+          pathLength="1"
+          d="M0 8 H22 L27 8 L31 3 L35 13 L39 8 H64"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    ) : (
+      <span class="h-px w-7 shrink-0 bg-brand-400 dark:bg-brand-600" aria-hidden="true" />
+    )
+  }
+  <slot />
+</span>

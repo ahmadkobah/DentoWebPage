@@ -1,0 +1,51 @@
+---
+/**
+ * NodeTooth — a tooth silhouette built from "nodes" joined by thin connectors,
+ * reading at once as a TOOTH (dental) and a NETWORK (tech) — the site's
+ * signature "one connected system" motif. The connectors stroke-draw and the
+ * nodes fade in when revealed, so it MUST sit inside a [data-reveal] container.
+ * Colour/size via `class`.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+
+// Perimeter points (tooth outline) + a central hub node (last).
+const nodes = [
+  [30, 38], [60, 28], [90, 38], [98, 66], [90, 98],
+  [76, 122], [60, 130], [44, 122], [30, 98], [22, 66], [60, 78],
+];
+---
+
+<svg
+  class:list={['pointer-events-none text-brand-300 dark:text-brand-600', className]}
+  viewBox="0 0 120 140"
+  fill="none"
+  aria-hidden="true"
+>
+  <path
+    class="draw-on"
+    pathLength="1"
+    style="--draw-delay:0.15s"
+    stroke="currentColor"
+    stroke-width="1.25"
+    stroke-linejoin="round"
+    d="M30,38 L60,28 L90,38 L98,66 L90,98 L76,122 L60,130 L44,122 L30,98 L22,66 Z"
+  />
+  <line class="draw-on" pathLength="1" style="--draw-delay:0.5s" stroke="currentColor" stroke-width="1" x1="60" y1="78" x2="60" y2="28" />
+  <line class="draw-on" pathLength="1" style="--draw-delay:0.6s" stroke="currentColor" stroke-width="1" x1="60" y1="78" x2="98" y2="66" />
+  <line class="draw-on" pathLength="1" style="--draw-delay:0.6s" stroke="currentColor" stroke-width="1" x1="60" y1="78" x2="22" y2="66" />
+  <line class="draw-on" pathLength="1" style="--draw-delay:0.7s" stroke="currentColor" stroke-width="1" x1="60" y1="78" x2="60" y2="130" />
+  {
+    nodes.map((n, i) => (
+      <circle
+        class="deco-node fill-brand-500 dark:fill-brand-400"
+        style={`--node-delay:${0.4 + i * 0.05}s`}
+        cx={n[0]}
+        cy={n[1]}
+        r={i === nodes.length - 1 ? 4 : 3}
+      />
+    ))
+  }
+</svg>

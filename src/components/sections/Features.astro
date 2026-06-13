@@ -1,0 +1,56 @@
+---
+/**
+ * Features — icon grid of the core capabilities.
+ * Icons live here (non-translatable) and line up with t.features.items BY ORDER.
+ */
+import { Icon } from 'astro-icon/components';
+import Section from '../ui/Section.astro';
+import Badge from '../ui/Badge.astro';
+import Card from '../ui/Card.astro';
+import DotGrid from '../decor/DotGrid.astro';
+import { getUi, type Lang } from '../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = getUi(lang);
+
+// Order matches t.features.items.
+const icons = [
+  'lucide:folder-heart',
+  'lucide:calendar-check',
+  'lucide:clipboard-plus',
+  'lucide:scan-line',
+  'lucide:credit-card',
+  'lucide:file-check-2',
+  'lucide:package',
+  'lucide:message-circle',
+];
+const items = t.features.items.map((item, i) => ({ ...item, icon: icons[i] }));
+---
+
+<Section id="features" surface topDivider class="relative isolate">
+  <DotGrid />
+  <div class="mx-auto max-w-2xl text-center" data-reveal>
+    <Badge>{t.features.eyebrow}</Badge>
+    <h2 class="mt-5 text-3xl font-extrabold tracking-tight text-[var(--color-heading)] sm:text-4xl">
+      {t.features.title}
+    </h2>
+    <p class="mt-4 text-lg text-[var(--color-muted)]">{t.features.subtitle}</p>
+  </div>
+
+  <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    {
+      items.map((item, i) => (
+        <Card hover data-reveal style={`--reveal-delay:${i * 60}ms`}>
+          <span class="inline-grid size-12 place-items-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
+            <Icon name={item.icon} class="size-6" aria-hidden="true" />
+          </span>
+          <h3 class="mt-4 text-base font-bold text-ink">{item.title}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-[var(--color-muted)]">{item.text}</p>
+        </Card>
+      ))
+    }
+  </div>
+</Section>

@@ -1,0 +1,16 @@
+---
+/**
+ * Container — centered max-width wrapper with responsive gutters.
+ * Use inside custom sections (Section already includes one).
+ */
+interface Props {
+  as?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+const { as: Tag = 'div', class: className = '', ...rest } = Astro.props;
+---
+
+<Tag class:list={['container-page', className]} {...rest}>
+  <slot />
+</Tag>

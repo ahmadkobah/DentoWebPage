@@ -1,0 +1,17 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import LegalArticle from '../../components/LegalArticle.astro';
+import { getUi } from '../../i18n/utils';
+
+const lang = 'ar' as const;
+const t = getUi(lang);
+---
+
+<SiteLayout
+  lang={lang}
+  path="/impressum"
+  title={`${t.legal.impressum.title} — ${t.meta.brand}`}
+  description={t.legal.impressum.lead}
+>
+  <LegalArticle lang={lang} doc={t.legal.impressum} />
+</SiteLayout>

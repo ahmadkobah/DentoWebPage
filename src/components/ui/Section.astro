@@ -1,0 +1,39 @@
+---
+/**
+ * Section — a full-width landing-page section with consistent vertical rhythm,
+ * an inner Container, and an optional soft-grey "surface" background.
+ *
+ * @prop id        anchor id (so the header nav can scroll to it)
+ * @prop surface   tint the section background grey
+ * @prop class     extra classes on the <section>
+ * @prop inner     extra classes on the inner container
+ */
+import SectionDivider from '../decor/SectionDivider.astro';
+
+interface Props {
+  id?: string;
+  surface?: boolean;
+  /** Render a scalloped "tooth-edge" divider at the top seam. */
+  topDivider?: boolean;
+  class?: string;
+  inner?: string;
+  [key: string]: unknown;
+}
+const { id, surface = false, topDivider = false, class: className = '', inner = '', ...rest } =
+  Astro.props;
+---
+
+<section
+  id={id}
+  class:list={[
+    'py-12 md:py-18',
+    { 'bg-[var(--color-surface)]': surface, relative: topDivider },
+    className,
+  ]}
+  {...rest}
+>
+  {topDivider && <SectionDivider fill={surface ? 'var(--color-surface)' : 'var(--color-bg)'} />}
+  <div class:list={['container-page', inner]}>
+    <slot />
+  </div>
+</section>

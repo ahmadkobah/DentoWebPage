@@ -1,0 +1,102 @@
+---
+/**
+ * LanguagePicker — a dropdown to choose the viewed language.
+ *
+ * Lists EVERY registered locale (from the i18n registry), so adding a new
+ * language in src/i18n/ automatically adds it here — no change needed. The
+ * current language is marked, and each option links to the same page in that
+ * locale. Vanilla JS dropdown (no framework island); keyboard + click-outside
+ * aware, RTL-safe and dark-mode ready.
+ *
+ * @prop align  which edge the menu aligns to ('end' for the header, 'start'
+ *              inside the mobile menu so it never runs off-screen)
+ */
+import { Icon } from 'astro-icon/components';
+import { localePath, locales, getUi, type Lang } from '../i18n/utils';
+import { languages } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  path?: string;
+  align?: 'start' | 'end';
+  class?: string;
+}
+const { lang, path = '/', align = 'end', class: className = '' } = Astro.props;
+const t = getUi(lang);
+---
+
+<div class:list={['relative', className]} data-lang-picker>
+  <button
+    type="button"
+    class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 dark:text-brand-200 dark:hover:bg-brand-900/40"
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-label={t.nav.language}
+    data-lang-button
+  >
+    <Icon name="lucide:globe" class="size-4" aria-hidden="true" />
+    <span>{languages[lang]}</span>
+    <Icon name="lucide:chevron-down" class="size-3.5 transition-transform" aria-hidden="true" data-lang-chevron />
+  </button>
+
+  <ul
+    class:list={[
+      'absolute z-50 mt-2 hidden min-w-44 overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-card)] py-1 shadow-card',
+      align === 'end' ? 'end-0' : 'start-0',
+    ]}
+    role="menu"
+    data-lang-menu
+  >
+    {
+      locales.map((code) => (
+        <li role="none">
+          <a
+            href={localePath(code, path)}
+            hreflang={code}
+            lang={code}
+            role="menuitem"
+            aria-current={code === lang ? 'true' : undefined}
+            class:list={[
+              'flex items-center justify-between gap-3 px-4 py-2 text-sm transition',
+              code === lang
+                ? 'font-semibold text-brand-700 dark:text-brand-200'
+                : 'text-ink hover:bg-brand-50 dark:hover:bg-brand-900/40',
+            ]}
+          >
+            <span>{languages[code]}</span>
+            {code === lang && (
+              <Icon name="lucide:check" class="size-4 text-brand-600 dark:text-brand-300" aria-hidden="true" />
+            )}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<script>
+  // Wire every language picker on the page (header + mobile menu).
+  document.querySelectorAll<HTMLElement>('[data-lang-picker]').forEach((picker) => {
+    const btn = picker.querySelector<HTMLButtonElement>('[data-lang-button]');
+    const menu = picker.querySelector<HTMLElement>('[data-lang-menu]');
+    const chevron = picker.querySelector<HTMLElement>('[data-lang-chevron]');
+    if (!btn || !menu) return;
+
+    const setOpen = (open: boolean) => {
+      btn.setAttribute('aria-expanded', String(open));
+      menu.classList.toggle('hidden', !open);
+      chevron?.classList.toggle('rotate-180', open);
+    };
+
+    btn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      setOpen(btn.getAttribute('aria-expanded') !== 'true');
+    });
+    document.addEventListener('click', (event) => {
+      if (!picker.contains(event.target as Node)) setOpen(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    });
+  });
+</script>

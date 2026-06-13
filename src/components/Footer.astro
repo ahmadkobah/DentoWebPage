@@ -1,0 +1,96 @@
+---
+/**
+ * Footer — brand blurb, link columns (Product / Company / Legal), contact,
+ * and a bottom bar. Hrefs are built here (locale-aware); labels come from the
+ * copy deck. Anchor links point back to the home page's sections.
+ */
+import { Icon } from 'astro-icon/components';
+import Logo from './ui/Logo.astro';
+import { getUi, localePath, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = getUi(lang);
+
+const home = localePath(lang, '/');
+const sectionHref = (id: string) => `${home}#${id}`;
+
+const columns = [
+  {
+    title: t.footer.productTitle,
+    links: [
+      { label: t.nav.features, href: sectionHref('features') },
+      { label: t.nav.why, href: sectionHref('why') },
+      { label: t.nav.pricing, href: sectionHref('pricing') },
+      { label: t.nav.bookDemo, href: sectionHref('demo') },
+    ],
+  },
+  {
+    title: t.footer.companyTitle,
+    links: [
+      { label: t.footer.about, href: localePath(lang, '/about') },
+      { label: t.nav.contact, href: localePath(lang, '/contact') },
+    ],
+  },
+  {
+    title: t.footer.legalTitle,
+    links: [
+      { label: t.footer.privacy, href: localePath(lang, '/privacy') },
+      { label: t.footer.terms, href: localePath(lang, '/terms') },
+      { label: t.footer.impressum, href: localePath(lang, '/impressum') },
+    ],
+  },
+];
+
+const year = 2026; // TODO: keep in sync at deploy time (kept static for reproducible builds).
+---
+
+<footer class="border-t border-[var(--color-line)] bg-[var(--color-surface)]">
+  <div class="container-page py-14 md:py-16">
+    <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-5">
+      <!-- Brand blurb -->
+      <div class="lg:col-span-2">
+        <Logo lang={lang} />
+        <p class="mt-4 max-w-sm text-sm leading-relaxed text-[var(--color-muted)]">
+          {t.footer.tagline}
+        </p>
+        <p class="mt-4 flex items-center gap-2 text-sm text-[var(--color-muted)]">
+          <Icon name="lucide:shield-check" class="size-4 text-brand-600" aria-hidden="true" />
+          {t.hero.trust3}
+        </p>
+      </div>
+
+      <!-- Link columns -->
+      {
+        columns.map((col) => (
+          <div>
+            <h2 class="text-sm font-semibold text-ink">{col.title}</h2>
+            <ul class="mt-4 space-y-3">
+              {col.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="text-sm text-[var(--color-muted)] transition hover:text-brand-700"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="border-t border-[var(--color-line)]">
+    <div
+      class="container-page flex flex-col items-center justify-between gap-3 py-6 text-sm text-[var(--color-muted)] sm:flex-row"
+    >
+      <p>© {year} {t.meta.brand}. {t.footer.rights}</p>
+      <p>{t.footer.madeNote}</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,36 @@
+---
+/**
+ * SectionDivider — a wide, shallow scalloped "tooth-edge" seam. Rendered as the
+ * first child of a `relative` section; it sits just above the section's top
+ * edge and extrudes `fill` up into the previous section, replacing a hard
+ * colour seam with a subtle row of molar crowns. Pure SVG, no animation.
+ */
+interface Props {
+  /** Fill colour token — should match the section's own background. */
+  fill?: string;
+  class?: string;
+}
+const { fill = 'var(--color-surface)', class: className = '' } = Astro.props;
+---
+
+<div
+  class:list={['deco-divider pointer-events-none absolute inset-x-0 top-0', className]}
+  style={`color:${fill}`}
+  aria-hidden="true"
+>
+  <svg class="block w-full" viewBox="0 0 1200 24" preserveAspectRatio="none" height="24" fill="currentColor">
+    <path
+      d="M0,24 L0,14 Q50,3 100,14 Q150,3 200,14 Q250,3 300,14 Q350,3 400,14 Q450,3 500,14 Q550,3 600,14 Q650,3 700,14 Q750,3 800,14 Q850,3 900,14 Q950,3 1000,14 Q1050,3 1100,14 Q1150,3 1200,14 L1200,24 Z"
+    />
+  </svg>
+</div>
+
+<style>
+  .deco-divider {
+    transform: translateY(-100%);
+    line-height: 0;
+  }
+  :global([dir='rtl']) .deco-divider svg {
+    transform: scaleX(-1);
+  }
+</style>

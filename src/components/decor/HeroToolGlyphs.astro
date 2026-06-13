@@ -1,0 +1,42 @@
+---
+/**
+ * HeroToolGlyphs — a few faint dental-tool line-glyphs in brand chips, peeking
+ * around the hero product mock so the hero reads unmistakably dental. Static (no
+ * loop), pointer-events-none, positioned in the gutters so they never touch
+ * copy. Place inside the hero's relative image-column wrapper.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+
+const chip =
+  'absolute grid place-items-center rounded-2xl bg-brand-50/80 text-brand-500 shadow-soft dark:bg-brand-900/40 dark:text-brand-300';
+---
+
+<div class:list={['pointer-events-none absolute inset-0', className]} aria-hidden="true">
+  <!-- Tooth (reuses the logo mark) -->
+  <span class:list={[chip, '-start-5 top-8 size-12 rotate-[-8deg]']}>
+    <svg viewBox="0 0 32 32" class="size-6" fill="currentColor">
+      <path
+        d="M16 7.2c-1.9 0-2.9-1-4.9-1-2.3 0-3.9 1.5-3.9 4 0 2.1.7 3.7 1.4 6 .8 2.6 1 6 2.6 6 1.4 0 1.3-3.4 2.4-3.4 .6 0 .8 1.1 1.4 1.1h1.2c.6 0 .8-1.1 1.4-1.1 1.1 0 1 3.4 2.4 3.4 1.6 0 1.8-3.4 2.6-6 .7-2.3 1.4-3.9 1.4-6 0-2.5-1.6-4-3.9-4-2 0-3 1-4.9 1z"
+      />
+    </svg>
+  </span>
+
+  <!-- Mouth mirror -->
+  <span class:list={[chip, '-end-4 top-1/3 size-11 rotate-[10deg]']}>
+    <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="9" r="5.5" />
+      <path d="M13 13 20 20" />
+    </svg>
+  </span>
+
+  <!-- Explorer / probe -->
+  <span class:list={[chip, '-end-2 bottom-10 size-11 -rotate-[8deg]']}>
+    <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 19 14 10" />
+      <path d="M14 10c2-2 2-3.5 4-4.5C19 8 17 8 16 10" />
+    </svg>
+  </span>
+</div>

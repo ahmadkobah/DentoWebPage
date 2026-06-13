@@ -1,0 +1,18 @@
+---
+/** About (`/ar/about`) — RTL. */
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import AboutContent from '../../components/AboutContent.astro';
+import { getUi } from '../../i18n/utils';
+
+const lang = 'ar' as const;
+const t = getUi(lang);
+---
+
+<SiteLayout
+  lang={lang}
+  path="/about"
+  title={`${t.about.metaTitle} — ${t.meta.brand}`}
+  description={t.about.metaDescription}
+>
+  <AboutContent lang={lang} />
+</SiteLayout>

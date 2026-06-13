@@ -1,0 +1,112 @@
+---
+/**
+ * Security — a dedicated trust section showing how Dento protects patient data.
+ * Left: pitch + a compliance emblem + trust badges. Right: a grid of safeguards.
+ * Icons line up with t.security.items BY ORDER.
+ */
+import { Icon } from 'astro-icon/components';
+import Section from '../ui/Section.astro';
+import Badge from '../ui/Badge.astro';
+import NodeTooth from '../decor/NodeTooth.astro';
+import ScanRings from '../decor/ScanRings.astro';
+import { getUi, type Lang } from '../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = getUi(lang);
+
+const icons = [
+  'lucide:database',
+  'lucide:lock',
+  'lucide:key-round',
+  'lucide:file-clock',
+  'lucide:user-check',
+  'lucide:badge-check',
+];
+const items = t.security.items.map((item, i) => ({ ...item, icon: icons[i] }));
+---
+
+<Section id="security" surface topDivider>
+  <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-16">
+    <!-- Pitch + emblem + badges -->
+    <div data-reveal>
+      <Badge>{t.security.eyebrow}</Badge>
+      <h2 class="mt-5 text-3xl font-extrabold tracking-tight text-[var(--color-heading)] sm:text-4xl">
+        {t.security.title}
+      </h2>
+      <p class="mt-4 text-lg text-[var(--color-muted)]">{t.security.subtitle}</p>
+
+      <!-- Compliance emblem -->
+      <div
+        class="mt-8 inline-flex items-center gap-4 rounded-2xl border border-brand-200 bg-[var(--color-card)] px-5 py-4 shadow-soft dark:border-brand-800"
+      >
+        <span class="relative grid size-12 shrink-0 place-items-center">
+          <ScanRings class="absolute left-1/2 top-1/2 size-20 -translate-x-1/2 -translate-y-1/2" />
+          <span class="relative grid size-12 place-items-center rounded-xl bg-brand-600 text-white shadow-soft">
+          <!-- Inline stroke SVG (lucide shield-check geometry) with pathLength="1"
+               so the stroke can draw itself on via CSS (global.css). -->
+          <svg
+            class="shield-emblem size-7"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              pathLength="1"
+              d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+            />
+            <path pathLength="1" d="m9 12 2 2 4-4" />
+          </svg>
+          </span>
+        </span>
+        <div>
+          <p class="font-bold text-ink">HIPAA-style &amp; GDPR-ready</p>
+          <p class="text-sm text-[var(--color-muted)]">Privacy & security by design</p>
+        </div>
+      </div>
+
+      <!-- Trust badges -->
+      <ul class="mt-6 flex flex-wrap gap-2">
+        {
+          t.security.badges.map((badge, i) => (
+            <li
+              class="sec-badge inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700 dark:border-brand-800 dark:bg-brand-900/40 dark:text-brand-200"
+              style={`--badge-delay:${i * 0.07}s`}
+            >
+              <Icon name="lucide:check" class="size-3.5" aria-hidden="true" />
+              {badge}
+            </li>
+          ))
+        }
+      </ul>
+
+      <!-- Tooth-from-tech-nodes constellation (signature dental + tech motif) -->
+      <NodeTooth class="mt-10 hidden w-32 lg:block" />
+    </div>
+
+    <!-- Safeguards grid -->
+    <div class="grid gap-5 sm:grid-cols-2">
+      {
+        items.map((item, i) => (
+          <div
+            class="rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] p-6 shadow-soft"
+            data-reveal
+            style={`--reveal-delay:${i * 60}ms`}
+          >
+            <span class="inline-grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
+              <Icon name={item.icon} class="size-6" aria-hidden="true" />
+            </span>
+            <h3 class="mt-4 text-base font-bold text-ink">{item.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-[var(--color-muted)]">{item.text}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</Section>

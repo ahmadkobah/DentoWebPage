@@ -1,0 +1,8 @@
+{
+  "// note": "VS Code will offer to install these when you open the project. The first one is what makes .astro files render with syntax highlighting instead of looking like plain text.",
+  "recommendations": [
+    "astro-build.astro-vscode",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode"
+  ]
+}

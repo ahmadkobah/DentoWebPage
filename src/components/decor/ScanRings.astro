@@ -1,0 +1,22 @@
+---
+/**
+ * ScanRings — concentric hairline rings that stroke-draw on reveal, like a calm
+ * protective radar field. Place behind a chip inside a [data-reveal] container.
+ * Center + size via `class`.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<svg
+  class:list={['pointer-events-none text-brand-300 dark:text-brand-700', className]}
+  viewBox="0 0 100 100"
+  fill="none"
+  aria-hidden="true"
+>
+  <circle class="draw-on" pathLength="1" style="--draw-delay:0.2s" cx="50" cy="50" r="22" stroke="currentColor" stroke-width="1" opacity="0.9" />
+  <circle class="draw-on" pathLength="1" style="--draw-delay:0.35s" cx="50" cy="50" r="33" stroke="currentColor" stroke-width="1" opacity="0.6" />
+  <circle class="draw-on" pathLength="1" style="--draw-delay:0.5s" cx="50" cy="50" r="45" stroke="currentColor" stroke-width="1" opacity="0.35" />
+</svg>

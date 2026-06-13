@@ -1,0 +1,25 @@
+---
+/** Arabic home (`/ar`) — the full landing page, RTL. */
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import Hero from '../../components/sections/Hero.astro';
+import ProblemSolution from '../../components/sections/ProblemSolution.astro';
+import Features from '../../components/sections/Features.astro';
+import WhyDento from '../../components/sections/WhyDento.astro';
+import Security from '../../components/sections/Security.astro';
+import Pricing from '../../components/sections/Pricing.astro';
+import SocialProof from '../../components/sections/SocialProof.astro';
+import DemoForm from '../../components/sections/DemoForm.astro';
+
+const lang = 'ar' as const;
+---
+
+<SiteLayout lang={lang} path="/">
+  <Hero lang={lang} />
+  <ProblemSolution lang={lang} />
+  <Features lang={lang} />
+  <WhyDento lang={lang} />
+  <Security lang={lang} />
+  <Pricing lang={lang} />
+  <SocialProof lang={lang} />
+  <DemoForm lang={lang} />
+</SiteLayout>

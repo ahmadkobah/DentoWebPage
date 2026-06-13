@@ -1,0 +1,64 @@
+---
+/** Problem → Solution — tool chaos vs. one connected system. */
+import { Icon } from 'astro-icon/components';
+import Section from '../ui/Section.astro';
+import Badge from '../ui/Badge.astro';
+import Aurora from '../decor/Aurora.astro';
+import { getUi, type Lang } from '../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = getUi(lang);
+---
+
+<Section id="problem" class="relative isolate overflow-hidden">
+  <Aurora class="end-[-7rem] top-[-5rem] size-[24rem]" />
+  <div class="mx-auto max-w-2xl text-center" data-reveal>
+    <Badge vitals>{t.problem.eyebrow}</Badge>
+    <h2 class="mt-5 text-3xl font-extrabold tracking-tight text-[var(--color-heading)] sm:text-4xl">
+      {t.problem.title}
+    </h2>
+    <p class="mt-4 text-lg text-[var(--color-muted)]">{t.problem.subtitle}</p>
+  </div>
+
+  <div class="mx-auto mt-12 grid max-w-4xl gap-6 lg:grid-cols-2">
+    <!-- Without Dento -->
+    <div class="rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] p-6 shadow-soft md:p-8" data-reveal>
+      <h3 class="flex items-center gap-2.5 text-lg font-bold text-ink">
+        <Icon name="lucide:circle-alert" class="size-5 text-accent-500" aria-hidden="true" />
+        {t.problem.chaosTitle}
+      </h3>
+      <ul class="mt-5 space-y-3">
+        {
+          t.problem.pains.map((pain) => (
+            <li class="flex gap-3 text-[var(--color-muted)]">
+              <Icon name="lucide:x" class="mt-0.5 size-5 shrink-0 text-accent-500" aria-hidden="true" />
+              <span>{pain}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <!-- With Dento -->
+    <div class="rounded-2xl border border-brand-200 bg-brand-50/40 p-6 shadow-soft ring-1 ring-brand-100 md:p-8 dark:border-brand-800 dark:bg-brand-900/20 dark:ring-brand-800/50" data-reveal style="--reveal-delay:120ms">
+      <h3 class="flex items-center gap-2.5 text-lg font-bold text-brand-800 dark:text-brand-200">
+        <Icon name="lucide:sparkles" class="size-5 text-brand-600" aria-hidden="true" />
+        {t.problem.solutionTitle}
+      </h3>
+      <p class="mt-2 font-medium text-brand-800 dark:text-brand-200">{t.problem.solutionLead}</p>
+      <ul class="mt-5 space-y-3">
+        {
+          t.problem.solutionPoints.map((point) => (
+            <li class="flex gap-3 text-brand-900 dark:text-brand-100">
+              <Icon name="lucide:check" class="mt-0.5 size-5 shrink-0 text-brand-600" aria-hidden="true" />
+              <span>{point}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</Section>

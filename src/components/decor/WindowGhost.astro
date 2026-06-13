@@ -1,0 +1,25 @@
+---
+/**
+ * WindowGhost — a faint "second app window" (dashed frame + 3-dot titlebar) that
+ * ghosts behind a card for quiet tech depth, echoing the dashboard's titlebar.
+ * Pure CSS, no JS. Position/size via `class` (place behind a card, offset).
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<div
+  class:list={[
+    'pointer-events-none absolute -z-10 rounded-3xl border border-dashed border-brand-200/70 bg-brand-50/20 dark:border-brand-800/70 dark:bg-brand-900/10',
+    className,
+  ]}
+  aria-hidden="true"
+>
+  <div class="flex gap-1.5 p-4">
+    <span class="size-2 rounded-full bg-brand-200 dark:bg-brand-800"></span>
+    <span class="size-2 rounded-full bg-brand-200 dark:bg-brand-800"></span>
+    <span class="size-2 rounded-full bg-brand-200 dark:bg-brand-800"></span>
+  </div>
+</div>

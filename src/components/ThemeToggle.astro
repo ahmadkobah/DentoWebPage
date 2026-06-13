@@ -1,0 +1,53 @@
+---
+/**
+ * ThemeToggle — switches light/dark ("night mode") and persists the choice in
+ * localStorage. The initial theme is applied pre-paint by an inline script in
+ * BaseLayout; this just flips it on click. Shows a moon in light mode and a sun
+ * in dark mode (the icon swap is pure CSS via the `dark:` variant).
+ */
+import { Icon } from 'astro-icon/components';
+import { getUi, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  class?: string;
+}
+const { lang, class: className = '' } = Astro.props;
+const t = getUi(lang);
+---
+
+<button
+  type="button"
+  id="theme-toggle"
+  class:list={[
+    'grid size-10 place-items-center rounded-lg text-brand-700 transition hover:bg-brand-50 dark:text-brand-200 dark:hover:bg-brand-900/40',
+    className,
+  ]}
+  aria-label={t.nav.toggleTheme}
+  title={t.nav.toggleTheme}
+>
+  <span class="relative grid size-5 place-items-center">
+    <Icon
+      name="lucide:moon"
+      class="col-start-1 row-start-1 size-5 transition duration-300 dark:rotate-90 dark:opacity-0"
+      aria-hidden="true"
+    />
+    <Icon
+      name="lucide:sun"
+      class="col-start-1 row-start-1 size-5 -rotate-90 opacity-0 transition duration-300 dark:rotate-0 dark:opacity-100"
+      aria-hidden="true"
+    />
+  </span>
+</button>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  toggle?.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    try {
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    } catch (e) {
+      /* storage unavailable — theme still applies for this page */
+    }
+  });
+</script>

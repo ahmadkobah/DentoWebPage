@@ -1,0 +1,394 @@
+---
+/**
+ * MockApp — the hero's auto-rotating product tour. Shares one app "chrome"
+ * (top bar + sidebar) and cross-fades through 4 CSS/SVG screens every 5s:
+ * Schedule → Chair map → Dental chart → Imaging. The active sidebar tab,
+ * progress dots and a floating "feature pill" all swap with the screen, so the
+ * decoration changes per page. Fully decorative (aria-hidden).
+ *
+ * Safe by design: a tiny vanilla island drives the rotation; it does NOT
+ * auto-rotate under prefers-reduced-motion, and it pauses when scrolled out of
+ * view or when the tab is hidden. The schedule's "wake-up" bars/rows + 0→12
+ * counter reuse the existing reveal CSS.
+ */
+import { Icon } from 'astro-icon/components';
+import { getUi, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = getUi(lang);
+const m = t.hero.mock;
+
+const toothPath =
+  'M16 7.2c-1.9 0-2.9-1-4.9-1-2.3 0-3.9 1.5-3.9 4 0 2.1.7 3.7 1.4 6 .8 2.6 1 6 2.6 6 1.4 0 1.3-3.4 2.4-3.4 .6 0 .8 1.1 1.4 1.1h1.2c.6 0 .8-1.1 1.4-1.1 1.1 0 1 3.4 2.4 3.4 1.6 0 1.8-3.4 2.6-6 .7-2.3 1.4-3.9 1.4-6 0-2.5-1.6-4-3.9-4-2 0-3 1-4.9 1z';
+
+const appts = [
+  { time: '09:00', proc: 'Cleaning', tone: 'brand' },
+  { time: '09:45', proc: 'Root canal', tone: 'accent' },
+  { time: '10:30', proc: 'Check-up', tone: 'brand' },
+  { time: '11:15', proc: 'Whitening', tone: 'muted' },
+];
+const chairs = ['busy', 'busy', 'free', 'busy', 'clean', 'busy'];
+// 16 teeth (two rows of 8): faint by default, a few treated, one selected.
+const teeth = [
+  'faint', 'faint', 'done', 'faint', 'active', 'faint', 'done', 'faint',
+  'faint', 'done', 'faint', 'faint', 'active', 'faint', 'done', 'faint',
+];
+
+// Sidebar tabs + floating pills (index === screen index).
+const tabs = [
+  { lucide: 'lucide:calendar-check', label: m.pillSchedule, tooth: false },
+  { lucide: 'lucide:armchair', label: m.pillChairs, tooth: false },
+  { lucide: '', label: m.pillChart, tooth: true },
+  { lucide: 'lucide:scan-line', label: m.pillImaging, tooth: false },
+];
+
+const screenBase = 'absolute inset-0 p-4 transition-opacity duration-700 sm:p-5';
+---
+
+<div class="relative" data-mock-tour aria-hidden="true">
+  <!-- reusable tooth symbol -->
+  <svg width="0" height="0" class="absolute">
+    <symbol id="mock-tooth" viewBox="0 0 32 32"><path fill="currentColor" d={toothPath} /></symbol>
+  </svg>
+
+  <div class="overflow-hidden rounded-3xl border border-[var(--color-line)] bg-[var(--color-card)] shadow-card">
+    <!-- top bar -->
+    <div class="flex items-center gap-2 border-b border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3">
+      <span class="size-3 rounded-full bg-accent-300"></span>
+      <span class="size-3 rounded-full bg-brand-200"></span>
+      <span class="size-3 rounded-full bg-brand-300"></span>
+      <div class="mx-auto h-5 w-40 rounded-md bg-[var(--color-card)]"></div>
+    </div>
+
+    <div class="grid grid-cols-[3.5rem_1fr] sm:grid-cols-[4.5rem_1fr]">
+      <!-- sidebar -->
+      <div class="flex flex-col items-center gap-3 border-e border-[var(--color-line)] py-5">
+        <span class="grid size-9 place-items-center rounded-xl bg-brand-600 text-white">
+          <svg class="size-5"><use href="#mock-tooth" /></svg>
+        </span>
+        {
+          tabs.map((tab) => (
+            <span
+              data-nav
+              class="grid size-8 place-items-center rounded-lg text-[var(--color-muted)] transition data-[on]:bg-brand-100 data-[on]:text-brand-600 dark:data-[on]:bg-brand-900/50 dark:data-[on]:text-brand-300"
+            >
+              {tab.tooth ? (
+                <svg class="size-4"><use href="#mock-tooth" /></svg>
+              ) : (
+                <Icon name={tab.lucide} class="size-4" />
+              )}
+            </span>
+          ))
+        }
+      </div>
+
+      <!-- stage: the cross-fading screens -->
+      <div class="relative h-[21.5rem] sm:h-[22.5rem]">
+        <!-- Screen 1 — Schedule -->
+        <div data-screen class={screenBase}>
+          <div class="mock-head flex items-baseline justify-between">
+            <div>
+              <p class="text-sm font-bold text-ink">{m.scheduleTitle}</p>
+              <p class="text-xs text-[var(--color-muted)]">{m.scheduleSub}</p>
+            </div>
+            <span
+              class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold tabular-nums text-brand-700 dark:bg-brand-900/40 dark:text-brand-200"
+              data-countup="12">12</span>
+          </div>
+          <div class="mt-4 grid grid-cols-3 gap-2">
+            <div class="rounded-xl bg-[var(--color-surface)] p-2.5">
+              <div class="h-2 w-8 rounded bg-brand-200"></div>
+              <div class="mock-bar mt-2 h-4 w-10 rounded bg-brand-500/80"></div>
+            </div>
+            <div class="rounded-xl bg-[var(--color-surface)] p-2.5">
+              <div class="h-2 w-8 rounded bg-accent-200"></div>
+              <div class="mock-bar mt-2 h-4 w-10 rounded bg-accent-400"></div>
+            </div>
+            <div class="rounded-xl bg-[var(--color-surface)] p-2.5">
+              <div class="h-2 w-8 rounded bg-brand-200"></div>
+              <div class="mock-bar mt-2 h-4 w-10 rounded bg-brand-400"></div>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2">
+            {
+              appts.map((a, i) => (
+                <div
+                  class="mock-row flex items-center gap-3 rounded-xl border border-[var(--color-line)] px-3 py-2"
+                  style={`--mock-delay:${i * 0.12}s`}
+                >
+                  <span class="text-xs font-semibold tabular-nums text-[var(--color-muted)]">{a.time}</span>
+                  <span
+                    class:list={[
+                      'size-7 rounded-full',
+                      a.tone === 'accent' ? 'bg-accent-100' : a.tone === 'muted' ? 'bg-[var(--color-surface)]' : 'bg-brand-100',
+                    ]}
+                  />
+                  <div class="min-w-0 flex-1">
+                    <div class="h-2.5 w-24 rounded bg-ink/80" />
+                    <div class="mt-1.5 h-2 w-16 rounded bg-[var(--color-line)]" />
+                  </div>
+                  <span
+                    class:list={[
+                      'rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                      a.tone === 'accent' ? 'bg-accent-50 text-accent-700' : 'bg-brand-50 text-brand-700',
+                    ]}
+                  >
+                    {a.proc}
+                  </span>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- Screen 2 — Chair map -->
+        <div data-screen class:list={[screenBase, 'opacity-0']}>
+          <div class="mock-head">
+            <p class="text-sm font-bold text-ink">{m.chairsTitle}</p>
+            <p class="text-xs text-[var(--color-muted)]">{m.chairsSub}</p>
+          </div>
+          <div class="mt-4 grid grid-cols-3 gap-2.5">
+            {
+              chairs.map((c, i) => (
+                <div class="mock-chair rounded-xl border border-[var(--color-line)] p-2.5" style={`--i:${i}`}>
+                  <div class="flex items-center justify-between">
+                    <svg
+                      class:list={[
+                        'size-4',
+                        c === 'busy' ? 'text-brand-500' : c === 'clean' ? 'text-accent-400' : 'text-[var(--color-line)]',
+                      ]}
+                    >
+                      <use href="#mock-tooth" />
+                    </svg>
+                    <span
+                      class:list={[
+                        'mock-chair-dot size-2 rounded-full',
+                        c === 'busy' ? 'bg-brand-500' : c === 'clean' ? 'bg-accent-400' : 'border border-[var(--color-muted)]/50',
+                      ]}
+                    />
+                  </div>
+                  <div class="mt-2.5 h-1.5 w-10 rounded bg-ink/60"></div>
+                  <div class="mt-1 h-1.5 w-6 rounded bg-[var(--color-line)]"></div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- Screen 3 — Dental chart -->
+        <div data-screen class:list={[screenBase, 'opacity-0']}>
+          <div class="mock-head">
+            <p class="text-sm font-bold text-ink">{m.chartTitle}</p>
+            <p class="text-xs text-[var(--color-muted)]">{m.chartSub}</p>
+          </div>
+          <div class="mt-5 space-y-1.5">
+            <div class="flex justify-center gap-1">
+              {teeth.slice(0, 8).map((tone, i) => (
+                <svg
+                  class:list={[
+                    'chart-tooth size-5',
+                    tone === 'active' && 'chart-tooth--active',
+                    tone === 'active' ? 'text-brand-600 dark:text-brand-300' : tone === 'done' ? 'text-brand-300 dark:text-brand-700' : 'text-brand-100 dark:text-brand-900',
+                  ]}
+                  style={`--tooth-delay:${i * 0.03}s; --tooth-delay-rtl:${(15 - i) * 0.03}s`}
+                >
+                  <use href="#mock-tooth" />
+                </svg>
+              ))}
+            </div>
+            <div class="flex justify-center gap-1">
+              {teeth.slice(8).map((tone, i) => (
+                <svg
+                  class:list={[
+                    'chart-tooth size-5 -scale-y-100',
+                    tone === 'active' && 'chart-tooth--active',
+                    tone === 'active' ? 'text-brand-600 dark:text-brand-300' : tone === 'done' ? 'text-brand-300 dark:text-brand-700' : 'text-brand-100 dark:text-brand-900',
+                  ]}
+                  style={`--tooth-delay:${(i + 8) * 0.03}s; --tooth-delay-rtl:${(15 - (i + 8)) * 0.03}s`}
+                >
+                  <use href="#mock-tooth" />
+                </svg>
+              ))}
+            </div>
+          </div>
+          <div class="mt-5 space-y-2.5">
+            {
+              ['bg-brand-500', 'bg-accent-400', 'bg-brand-300'].map((dot, i) => (
+                <div class="chart-row flex items-center gap-3" style={`--row-delay:${0.5 + i * 0.08}s`}>
+                  <span class:list={['size-2.5 rounded-full', dot]} />
+                  <div class="h-2 w-28 rounded bg-ink/50"></div>
+                  <div class="ms-auto h-2 w-10 rounded bg-[var(--color-line)]"></div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- Screen 4 — Imaging -->
+        <div data-screen class:list={[screenBase, 'opacity-0']}>
+          <div class="mock-head">
+            <p class="text-sm font-bold text-ink">{m.imagingTitle}</p>
+            <p class="text-xs text-[var(--color-muted)]">{m.imagingSub}</p>
+          </div>
+          <div class="mt-4 grid grid-cols-[1.4fr_1fr] gap-3">
+            <div class="relative grid place-items-center overflow-hidden rounded-xl bg-brand-50/60 py-6 dark:bg-brand-900/30">
+              <div class="mock-develop mock-scangrid pointer-events-none absolute inset-0"></div>
+              <svg class="mock-develop relative size-16 text-brand-500/90 dark:text-brand-300"><use href="#mock-tooth" /></svg>
+              <span
+                class="mock-scanline pointer-events-none absolute inset-x-4 top-1/2 h-px bg-brand-500/70"
+                style="--scan-from:-3.4rem; --scan-to:3.4rem"></span>
+            </div>
+            <div class="space-y-2">
+              {
+                [0, 1, 2].map((i) => (
+                  <div class="mock-thumb relative grid place-items-center overflow-hidden rounded-lg bg-brand-50/60 py-2.5 dark:bg-brand-900/30" style={`--thumb-i:${i}`}>
+                    <div class="mock-scangrid pointer-events-none absolute inset-0"></div>
+                    <svg class="relative size-6 text-brand-500/80 dark:text-brand-300"><use href="#mock-tooth" /></svg>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- per-screen "feature" tag, pinned to the always-empty top-bar end corner
+         (over the title bar — never reaches a row, in LTR or RTL) -->
+    <div class="absolute end-4 top-3.5 z-20 hidden h-7 lg:block">
+      {
+        tabs.map((tab, i) => (
+          <span
+            data-pill
+            class:list={[
+              'absolute end-0 top-0 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700 shadow-soft transition duration-500 dark:border-brand-800 dark:bg-brand-900 dark:text-brand-200',
+              i === 0 ? 'opacity-100' : 'translate-y-1 opacity-0',
+            ]}
+          >
+            {tab.tooth ? (
+              <svg class="size-3.5 text-brand-500 dark:text-brand-300"><use href="#mock-tooth" /></svg>
+            ) : (
+              <Icon name={tab.lucide} class="size-3.5 text-brand-500 dark:text-brand-300" />
+            )}
+            {tab.label}
+          </span>
+        ))
+      }
+    </div>
+
+    <!-- progress dots -->
+    <div class="flex items-center justify-center gap-1.5 border-t border-[var(--color-line)] bg-[var(--color-surface)] py-2.5">
+      {tabs.map(() => <span data-dot class="size-1.5 rounded-full bg-[var(--color-line)] transition data-[on]:size-2.5 data-[on]:bg-brand-500"></span>)}
+    </div>
+  </div>
+
+</div>
+
+<style>
+  .mock-scangrid {
+    background-image:
+      linear-gradient(var(--color-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+    background-size: 9px 9px;
+    opacity: 0.5;
+  }
+</style>
+
+<script>
+  const tour = document.querySelector<HTMLElement>('[data-mock-tour]');
+  if (tour) {
+    const screens = [...tour.querySelectorAll<HTMLElement>('[data-screen]')];
+    const dots = [...tour.querySelectorAll<HTMLElement>('[data-dot]')];
+    const pills = [...tour.querySelectorAll<HTMLElement>('[data-pill]')];
+    const navs = [...tour.querySelectorAll<HTMLElement>('[data-nav]')];
+    const n = screens.length;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let active = 0;
+    let timer = 0;
+    let inView = false;
+
+    function render() {
+      screens.forEach((el, i) => {
+        el.classList.toggle('opacity-100', i === active);
+        el.classList.toggle('opacity-0', i !== active);
+        el.toggleAttribute('data-on', i === active); // re-triggers the entrance animation
+      });
+      dots.forEach((el, i) => el.toggleAttribute('data-on', i === active));
+      navs.forEach((el, i) => el.toggleAttribute('data-on', i === active));
+      pills.forEach((el, i) => {
+        el.classList.toggle('opacity-100', i === active);
+        el.classList.toggle('opacity-0', i !== active);
+        el.classList.toggle('translate-y-1', i !== active);
+      });
+    }
+    function next() {
+      active = (active + 1) % n;
+      render();
+    }
+    function start() {
+      if (reduce || timer) return;
+      timer = window.setInterval(next, 5000);
+    }
+    function stop() {
+      if (timer) {
+        clearInterval(timer);
+        timer = 0;
+      }
+    }
+
+    render();
+    navs.forEach((el, i) => el.toggleAttribute('data-on', i === 0));
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            inView = entry.isIntersecting;
+            if (inView && !document.hidden) start();
+            else stop();
+          }
+        },
+        { threshold: 0.25 },
+      ).observe(tour);
+    } else {
+      inView = true;
+      start();
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop();
+      else if (inView) start();
+    });
+
+    // 0 -> 12 count-up on the schedule chip (runs once when it first appears).
+    const counter = tour.querySelector<HTMLElement>('[data-countup]');
+    if (counter) {
+      const target = Number(counter.getAttribute('data-countup')) || 0;
+      if (reduce || !('IntersectionObserver' in window)) {
+        counter.textContent = String(target);
+      } else {
+        counter.textContent = '0';
+        const io = new IntersectionObserver(
+          (entries, obs) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              obs.unobserve(entry.target);
+              let startTime: number | undefined;
+              const step = (now: number) => {
+                if (startTime === undefined) startTime = now;
+                const p = Math.min((now - startTime) / 1100, 1);
+                counter.textContent = String(Math.round((1 - Math.pow(1 - p, 3)) * target));
+                if (p < 1) requestAnimationFrame(step);
+              };
+              requestAnimationFrame(step);
+            }
+          },
+          { threshold: 0.6 },
+        );
+        io.observe(counter);
+      }
+    }
+  }
+</script>

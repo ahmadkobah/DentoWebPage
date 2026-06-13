@@ -1,0 +1,21 @@
+---
+/**
+ * Aurora — one soft ambient teal orb for calm "operating-room" depth. A single
+ * blurred (GPU) layer; kept STATIC (no loop) to stay Lighthouse-safe. Cap ~2
+ * per page. Position/size via `class`. Sits behind content (-z-10) inside a
+ * `relative isolate overflow-hidden` section.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<div
+  class:list={[
+    'pointer-events-none absolute -z-10 rounded-full bg-brand-200/25 blur-3xl dark:bg-brand-900/25',
+    className,
+  ]}
+  aria-hidden="true"
+>
+</div>
